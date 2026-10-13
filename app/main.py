@@ -57,7 +57,13 @@ def compute_work_hours(punch_in: datetime, punch_out: datetime) -> float:
 def compute_overtime(punch_out: datetime, shift_end: str, date_str: str) -> int:
     h, m = map(int, shift_end.split(":"))
     end = datetime.fromisoformat(date_str).replace(hour=h, minute=m, tzinfo=IST)
-    return max(0, int((punch_out - end).total_seconds() / 60))
+    # Naive punch times in this API represent local IST; normalize aware ones too.
+    punch_out_ist = (
+        punch_out.replace(tzinfo=IST)
+        if punch_out.tzinfo is None
+        else punch_out.astimezone(IST)
+    )
+    return max(0, int((punch_out_ist - end).total_seconds() / 60))
 
 
 # --------------------------------------------------------------------------- #
@@ -103,8 +109,8 @@ def list_employees(department: Optional[str] = None, page: int = 1, page_size: i
     q = {}
     if department:
         q["department"] = department
-    skip = page * page_size
-    total = db.employees.count_documents({})
+    skip = (page-1) * page_size
+    total = db.employees.count_documents(q)
     items = list(db.employees.find(q, {"_id": 0}).skip(skip).limit(page_size))
     return {"items": items, "total": total, "page": page, "page_size": page_size}
 
