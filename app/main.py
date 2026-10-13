@@ -456,6 +456,8 @@ def update_attendance(emp_code: str, date: str, body: AttendancePatch):
         {"$set": new, "$push": {"history": entry}},
         return_document=ReturnDocument.AFTER,
     )
+    if doc is None:
+        raise HTTPException(status_code=404, detail="Attendance record not found")
     return serialize(doc)
 
 
