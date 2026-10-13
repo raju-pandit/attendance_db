@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "dotenv": "^18.0.7",
+    "fastapi": "^0.0.8",
+    "pydantic": "^0.0.1-security",
+    "pymongo": "^0.0.1-security"
+  }
+}
